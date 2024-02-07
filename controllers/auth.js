@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { errorHandler } from '../utils/error.js';
 import jwt from 'jsonwebtoken';
 
+
 export const signup = async(req, res, next) => {
     try{
         const { username, email } = req.body;
@@ -59,10 +60,17 @@ export const login = async (req, res, next) => {
 
         const {password, ...rest} = user.toObject();
 
-        return res.status(200).json({status: true, user: rest})
+        const token = jwt.sign({
+            id: user._id,
+            user: user
+        }, process.env.JWT_SECRET_KEY, {expiresIn:'3d'})
+
+        return res.status(200).cookie('access_token', token, {
+            httpOnly: true
+        }).json({status: true, user: rest})
 
 
     }catch(error){
-        console.log(err)
+        console.log(error)
     }
 }
